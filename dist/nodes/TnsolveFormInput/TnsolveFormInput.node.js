@@ -3,13 +3,14 @@ export class TnsolveFormInput {
         displayName: 'TN Solve Form Input',
         name: 'tnsolveFormInput',
         icon: 'file:tnsolve.svg',
-        group: ['input'],
+        group: ['trigger'],
         version: 1,
-        description: 'Collect form data for TN Solve video creation',
+        description: 'Manually trigger workflow with TN Solve form input',
+        eventTriggerDescription: 'When form is submitted',
         defaults: {
             name: 'TN Solve Form Input',
         },
-        inputs: ['main'],
+        inputs: [],
         outputs: ['main'],
         properties: [
             {
@@ -213,63 +214,59 @@ export class TnsolveFormInput {
             },
         ],
     };
-    async execute() {
+    async trigger() {
         const operation = this.getNodeParameter('operation', 0);
-        const items = this.getInputData();
-        const returnData = [];
-        for (let i = 0; i < items.length; i++) {
-            const title = this.getNodeParameter('title', i);
-            const script = this.getNodeParameter('script', i);
-            const modelVideo = this.getNodeParameter('modelVideo', i);
-            const frameRate = this.getNodeParameter('frameRate', i);
-            const videoStyle = this.getNodeParameter('videoStyle', i);
-            const duration = this.getNodeParameter('duration', i);
-            const outputData = {
-                title,
-                value: script,
-                modelVideo,
-                frameRate,
-                videoStyle,
-                videoDuration: duration,
-            };
-            if (operation === 'collectMovieData') {
-                outputData.videoMode = 'movie';
-            }
-            else if (operation === 'collectMySubjectData') {
-                const subjectImage = this.getNodeParameter('subjectImage', i);
-                const imageUrls = subjectImage.split(',').map(url => url.trim()).filter(url => url);
-                if (imageUrls.length !== 1) {
-                    throw new Error('Chủ thể của tôi requires exactly 1 image');
-                }
-                outputData.videoMode = 'my_subject';
-                outputData.subjectImage = subjectImage.trim();
-            }
-            else if (operation === 'collectCustomCharacterData') {
-                const characterPrompt = this.getNodeParameter('characterPrompt', i);
-                const characterImages = this.getNodeParameter('characterImages', i);
-                const imageUrls = characterImages.split(',').map(url => url.trim()).filter(url => url);
-                if (imageUrls.length !== 2) {
-                    throw new Error('Nhân vật tùy chỉnh requires exactly 2 images');
-                }
-                outputData.videoMode = 'custom_character';
-                outputData.characterPrompt = characterPrompt;
-                outputData.characterImages = characterImages;
-            }
-            else if (operation === 'collectCustomScenesData') {
-                const scenePrompts = this.getNodeParameter('scenePrompts', i);
-                const durationValue = parseInt(duration, 10);
-                const durationInSeconds = durationValue * 8;
-                const requiredScenes = durationValue;
-                const scenes = scenePrompts.split('|').map(scene => scene.trim()).filter(scene => scene);
-                if (scenes.length !== requiredScenes) {
-                    throw new Error(`Bối cảnh tùy chỉnh requires ${requiredScenes} scene prompts for ${durationInSeconds}s video`);
-                }
-                outputData.videoMode = 'custom_scenes';
-                outputData.scenePrompts = scenePrompts;
-            }
-            returnData.push({ json: outputData });
+        const title = this.getNodeParameter('title', 0);
+        const script = this.getNodeParameter('script', 0);
+        const modelVideo = this.getNodeParameter('modelVideo', 0);
+        const frameRate = this.getNodeParameter('frameRate', 0);
+        const videoStyle = this.getNodeParameter('videoStyle', 0);
+        const duration = this.getNodeParameter('duration', 0);
+        const outputData = {
+            title,
+            value: script,
+            modelVideo,
+            frameRate,
+            videoStyle,
+            videoDuration: duration,
+        };
+        if (operation === 'collectMovieData') {
+            outputData.videoMode = 'movie';
         }
-        return [returnData];
+        else if (operation === 'collectMySubjectData') {
+            const subjectImage = this.getNodeParameter('subjectImage', 0);
+            const imageUrls = subjectImage.split(',').map(url => url.trim()).filter(url => url);
+            if (imageUrls.length !== 1) {
+                throw new Error('Chủ thể của tôi requires exactly 1 image');
+            }
+            outputData.videoMode = 'my_subject';
+            outputData.subjectImage = subjectImage.trim();
+        }
+        else if (operation === 'collectCustomCharacterData') {
+            const characterPrompt = this.getNodeParameter('characterPrompt', 0);
+            const characterImages = this.getNodeParameter('characterImages', 0);
+            const imageUrls = characterImages.split(',').map(url => url.trim()).filter(url => url);
+            if (imageUrls.length !== 2) {
+                throw new Error('Nhân vật tùy chỉnh requires exactly 2 images');
+            }
+            outputData.videoMode = 'custom_character';
+            outputData.characterPrompt = characterPrompt;
+            outputData.characterImages = characterImages.trim();
+        }
+        else if (operation === 'collectCustomScenesData') {
+            const scenePrompts = this.getNodeParameter('scenePrompts', 0);
+            const durationValue = parseInt(duration, 10);
+            const durationInSeconds = durationValue * 8;
+            const requiredScenes = durationValue;
+            const scenes = scenePrompts.split('|').map(scene => scene.trim()).filter(scene => scene);
+            if (scenes.length !== requiredScenes) {
+                throw new Error(`Bối cảnh tùy chỉnh requires ${requiredScenes} scene prompts for ${durationInSeconds}s video`);
+            }
+            outputData.videoMode = 'custom_scenes';
+            outputData.scenePrompts = scenePrompts;
+        }
+        this.emit([this.helpers.returnJsonArray([outputData])]);
+        return {};
     }
 }
 //# sourceMappingURL=TnsolveFormInput.node.js.map

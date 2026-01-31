@@ -1,6 +1,6 @@
 import {
-	IExecuteFunctions,
-	INodeExecutionData,
+	ITriggerFunctions,
+	ITriggerResponse,
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
@@ -11,13 +11,14 @@ export class TnsolveFormInput implements INodeType {
 		displayName: 'TN Solve Form Input',
 		name: 'tnsolveFormInput',
 		icon: 'file:tnsolve.svg',
-		group: ['input'],
+		group: ['trigger'],
 		version: 1,
-		description: 'Collect form data for TN Solve video creation',
+		description: 'Manually trigger workflow with TN Solve form input',
+		eventTriggerDescription: 'When form is submitted',
 		defaults: {
 			name: 'TN Solve Form Input',
 		},
-		inputs: ['main'],
+		inputs: [],
 		outputs: ['main'],
 		properties: [
 			{
@@ -222,71 +223,66 @@ export class TnsolveFormInput implements INodeType {
 		],
 	};
 
-	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+	async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
 		const operation = this.getNodeParameter('operation', 0) as string;
-		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
+		
+		const title = this.getNodeParameter('title', 0) as string;
+		const script = this.getNodeParameter('script', 0) as string;
+		const modelVideo = this.getNodeParameter('modelVideo', 0) as string;
+		const frameRate = this.getNodeParameter('frameRate', 0) as string;
+		const videoStyle = this.getNodeParameter('videoStyle', 0) as string;
+		const duration = this.getNodeParameter('duration', 0) as string;
 
-		for (let i = 0; i < items.length; i++) {
-			const title = this.getNodeParameter('title', i) as string;
-			const script = this.getNodeParameter('script', i) as string;
-			const modelVideo = this.getNodeParameter('modelVideo', i) as string;
-			const frameRate = this.getNodeParameter('frameRate', i) as string;
-			const videoStyle = this.getNodeParameter('videoStyle', i) as string;
-			const duration = this.getNodeParameter('duration', i) as string;
+		const outputData: IDataObject = {
+			title,
+			value: script,
+			modelVideo,
+			frameRate,
+			videoStyle,
+			videoDuration: duration,
+		};
 
-			const outputData: IDataObject = {
-				title,
-				value: script,
-				modelVideo,
-				frameRate,
-				videoStyle,
-				videoDuration: duration,
-			};
-
-			if (operation === 'collectMovieData') {
-				outputData.videoMode = 'movie';
-			} else if (operation === 'collectMySubjectData') {
-				const subjectImage = this.getNodeParameter('subjectImage', i) as string;
-				const imageUrls = subjectImage.split(',').map(url => url.trim()).filter(url => url);
-				
-				if (imageUrls.length !== 1) {
-					throw new Error('Chủ thể của tôi requires exactly 1 image');
-				}
-
-				outputData.videoMode = 'my_subject';
-				outputData.subjectImage = subjectImage.trim();
-			} else if (operation === 'collectCustomCharacterData') {
-				const characterPrompt = this.getNodeParameter('characterPrompt', i) as string;
-				const characterImages = this.getNodeParameter('characterImages', i) as string;
-				const imageUrls = characterImages.split(',').map(url => url.trim()).filter(url => url);
-				
-				if (imageUrls.length !== 2) {
-					throw new Error('Nhân vật tùy chỉnh requires exactly 2 images');
-				}
-
-				outputData.videoMode = 'custom_character';
-				outputData.characterPrompt = characterPrompt;
-				outputData.characterImages = characterImages;
-			} else if (operation === 'collectCustomScenesData') {
-				const scenePrompts = this.getNodeParameter('scenePrompts', i) as string;
-				const durationValue = parseInt(duration, 10);
-				const durationInSeconds = durationValue * 8;
-				const requiredScenes = durationValue;
-				
-				const scenes = scenePrompts.split('|').map(scene => scene.trim()).filter(scene => scene);
-				
-				if (scenes.length !== requiredScenes) {
-					throw new Error(`Bối cảnh tùy chỉnh requires ${requiredScenes} scene prompts for ${durationInSeconds}s video`);
-				}
-
-				outputData.videoMode = 'custom_scenes';
-				outputData.scenePrompts = scenePrompts;
+		if (operation === 'collectMovieData') {
+			outputData.videoMode = 'movie';
+		} else if (operation === 'collectMySubjectData') {
+			const subjectImage = this.getNodeParameter('subjectImage', 0) as string;
+			const imageUrls = subjectImage.split(',').map(url => url.trim()).filter(url => url);
+			
+			if (imageUrls.length !== 1) {
+				throw new Error('Chủ thể của tôi requires exactly 1 image');
 			}
 
-			returnData.push({ json: outputData });
+			outputData.videoMode = 'my_subject';
+			outputData.subjectImage = subjectImage.trim();
+		} else if (operation === 'collectCustomCharacterData') {
+			const characterPrompt = this.getNodeParameter('characterPrompt', 0) as string;
+			const characterImages = this.getNodeParameter('characterImages', 0) as string;
+			const imageUrls = characterImages.split(',').map(url => url.trim()).filter(url => url);
+			
+			if (imageUrls.length !== 2) {
+				throw new Error('Nhân vật tùy chỉnh requires exactly 2 images');
+			}
+
+			outputData.videoMode = 'custom_character';
+			outputData.characterPrompt = characterPrompt;
+			outputData.characterImages = characterImages.trim();
+		} else if (operation === 'collectCustomScenesData') {
+			const scenePrompts = this.getNodeParameter('scenePrompts', 0) as string;
+			const durationValue = parseInt(duration, 10);
+			const durationInSeconds = durationValue * 8;
+			const requiredScenes = durationValue;
+			
+			const scenes = scenePrompts.split('|').map(scene => scene.trim()).filter(scene => scene);
+			
+			if (scenes.length !== requiredScenes) {
+				throw new Error(`Bối cảnh tùy chỉnh requires ${requiredScenes} scene prompts for ${durationInSeconds}s video`);
+			}
+
+			outputData.videoMode = 'custom_scenes';
+			outputData.scenePrompts = scenePrompts;
 		}
 
-		return [returnData];
+		this.emit([this.helpers.returnJsonArray([outputData])]);
+		return {};
 	}
 }
