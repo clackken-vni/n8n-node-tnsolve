@@ -1,3 +1,4 @@
 import { Tnsolve } from './nodes/Tnsolve/Tnsolve.node';
-export { Tnsolve };
+import { TnsolveFormInput } from './nodes/TnsolveFormInput/TnsolveFormInput.node';
+export { Tnsolve, TnsolveFormInput };
 //# sourceMappingURL=index.d.ts.map

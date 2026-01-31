@@ -155,6 +155,7 @@ export class Tnsolve {
                     },
                 },
             },
+            // Duration for Movie mode
             {
                 displayName: 'Duration',
                 name: 'videoDuration',
@@ -165,15 +166,47 @@ export class Tnsolve {
                     { name: '00:24 (24s)', value: '3' },
                     { name: '00:32 (32s)', value: '4' },
                     { name: '00:40 (40s)', value: '5' },
+                    { name: '00:48 (48s)', value: '6' },
+                    { name: '00:56 (56s)', value: '7' },
                     { name: '01:04 (64s)', value: '8' },
+                    { name: '01:36 (96s)', value: '12' },
                     { name: '02:08 (128s)', value: '16' },
-                    { name: '04:00 (240s)', value: '30' },
-                    { name: '08:00 (480s)', value: '60' },
+                    { name: '02:40 (160s)', value: '20' },
+                    { name: '03:12 (192s)', value: '24' },
+                    { name: '03:44 (224s)', value: '28' },
+                    { name: '04:16 (256s)', value: '32' },
+                    { name: '04:48 (288s)', value: '36' },
+                    { name: '05:20 (320s)', value: '40' },
                 ],
-                default: '1',
+                default: '8',
                 displayOptions: {
                     show: {
                         operation: ['createVideo'],
+                        videoMode: ['movie'],
+                    },
+                },
+                required: true,
+            },
+            // Duration for other modes
+            {
+                displayName: 'Duration',
+                name: 'videoDuration',
+                type: 'options',
+                options: [
+                    { name: '00:08 (8s)', value: '1' },
+                    { name: '00:16 (16s)', value: '2' },
+                    { name: '00:24 (24s)', value: '3' },
+                    { name: '00:32 (32s)', value: '4' },
+                    { name: '00:40 (40s)', value: '5' },
+                    { name: '00:48 (48s)', value: '6' },
+                    { name: '00:56 (56s)', value: '7' },
+                    { name: '01:04 (64s)', value: '8' },
+                ],
+                default: '8',
+                displayOptions: {
+                    show: {
+                        operation: ['createVideo'],
+                        videoMode: ['character_preservation', 'scene_consistency', 'my_subject', 'custom_character', 'custom_scenes'],
                     },
                 },
                 required: true,
@@ -356,6 +389,31 @@ export class Tnsolve {
                 }
                 else if (videoMode === 'custom_scenes') {
                     params.scenePrompts = this.getNodeParameter('scenePrompts', 0);
+                }
+                // Validate image requirements based on video mode
+                if (videoMode === 'my_subject') {
+                    const subjectImage = params.subjectImage || '';
+                    const imageUrls = subjectImage.split(',').map(url => url.trim()).filter(url => url);
+                    if (imageUrls.length !== 1) {
+                        throw new Error('Chủ thể của tôi requires exactly 1 image');
+                    }
+                }
+                else if (videoMode === 'custom_character') {
+                    const characterImages = params.characterImages || '';
+                    const imageUrls = characterImages.split(',').map(url => url.trim()).filter(url => url);
+                    if (imageUrls.length !== 2) {
+                        throw new Error('Nhân vật tùy chỉnh requires exactly 2 images');
+                    }
+                }
+                else if (videoMode === 'custom_scenes') {
+                    const duration = parseInt(videoDuration, 10);
+                    const durationInSeconds = duration * 8;
+                    const requiredImages = duration;
+                    const scenePrompts = params.scenePrompts || '';
+                    const imageUrls = scenePrompts.split(',').map(url => url.trim()).filter(url => url);
+                    if (imageUrls.length !== requiredImages) {
+                        throw new Error(`Bối cảnh tùy chỉnh requires ${requiredImages} images for ${durationInSeconds}s video`);
+                    }
                 }
                 // Create FormData
                 const formData = new FormData();

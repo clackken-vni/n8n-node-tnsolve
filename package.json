@@ -26,7 +26,8 @@
       "dist/credentials/TnsolveApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Tnsolve/Tnsolve.node.js"
+      "dist/nodes/Tnsolve/Tnsolve.node.js",
+      "dist/nodes/TnsolveFormInput/TnsolveFormInput.node.js"
     ]
   },
   "dependencies": {
