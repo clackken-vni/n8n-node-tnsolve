@@ -1,0 +1,1 @@
+{"version":3,"file":"Tnsolve.node.d.ts","sourceRoot":"","sources":["../../../src/nodes/Tnsolve/Tnsolve.node.ts"],"names":[],"mappings":"AAAA,OAAO,EAGN,iBAAiB,EACjB,kBAAkB,EAElB,SAAS,EACT,oBAAoB,EAEpB,MAAM,cAAc,CAAC;AAkBtB,qBAAa,OAAQ,YAAW,SAAS;IACxC,WAAW,EAAE,oBAAoB,CAsT/B;IAEK,OAAO,CAAC,IAAI,EAAE,iBAAiB,GAAG,OAAO,CAAC,kBAAkB,EAAE,EAAE,CAAC;CAiKxE"}

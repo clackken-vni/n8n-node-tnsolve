@@ -1,0 +1,16 @@
+[
+	{
+		"name": "n8n-nodes-tnsolve",
+		"version": 1,
+		"nodes": [
+			{
+				"name": "Tnsolve",
+				"codex": {
+					"categories": ["Productivity", "Marketing"],
+					"subcategories": {},
+					"keywords": ["tnsolve", "video", "ai", "automation", "creation"]
+				}
+			}
+		]
+	}
+]
